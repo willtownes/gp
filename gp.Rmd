@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-N<-20
+N<-10
 f_true<-function(t){-.15*(t-5)^2+3}
 x<-runif(N,0,10)
 y<- f_true(x) + rnorm(N,0,1) #maximum at x=5
@@ -49,4 +49,19 @@ hi<-mu_pts + 1.96*sigma_pts
 lines(xgrid,mu_pts,lty=1)
 lines(xgrid,lo,lty=3)
 lines(xgrid,hi,lty=3)
+```
+
+### Bayesian Optimization
+
+```{r}
+id_best<-N
+EI<-function(xnew,id_best,x,y,K){
+  sigma<-sqrt(sigma2_func(xnew,x,K))
+  if(sigma==0) return(0)
+  mu<-mu_func(xnew,x,y,K)
+  Z<-(mu-y[id_best])/sigma
+  (mu-y[id_best])*pnorm(Z) + sigma*dnorm(Z)
+}
+ei_pts<-vapply(xgrid,function(t){EI(t,id_best,x,y,K)},FUN.VALUE=1.0)
+plot(xgrid,ei_pts,type="l")
 ```
