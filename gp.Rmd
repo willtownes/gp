@@ -12,8 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 N<-10
-f_true<-function(t){-.15*(t-5)^2+3}
-x<-runif(N,0,10)
+f_true<-function(t){-.15*(t-5)^2+2}
+x<-c(runif(5,0,3),runif(5,7,10))
 y<- f_true(x) + rnorm(N,0,1) #maximum at x=5
 xgrid<-seq(from=min(x)-2,to=max(x)+2,length.out=100)
 plot(x,y,xlim=c(min(xgrid),max(xgrid)))
@@ -23,8 +23,8 @@ lines(xgrid,f_true(xgrid),lty=2)
 Gaussian Process
 
 ```{r}
-kern<-function(x,y){
-  exp(-(x-y)^2/2)
+kern<-function(x,y,rho=1){
+  exp(-(x-y)^2/(2*rho))
 }
 K<-matrix(0,nrow=N,ncol=N)
 for(i in 1:N){
@@ -65,3 +65,5 @@ EI<-function(xnew,id_best,x,y,K){
 ei_pts<-vapply(xgrid,function(t){EI(t,id_best,x,y,K)},FUN.VALUE=1.0)
 plot(xgrid,ei_pts,type="l")
 ```
+
+Nelder-Mead or DIRECT for derivative-free optimization.
