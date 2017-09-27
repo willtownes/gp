@@ -1,0 +1,42 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{graphicx}
+
+\newcommand{\given}{\,|\,}
+\newcommand{\iid}{\,{\buildrel iid \over \sim}\,}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\var}{\text{var}}
+\newcommand{\cov}{\text{cov}}
+\newcommand{\GP}{\mathcal{GP}}
+\DeclareMathOperator{\tr}{tr}
+
+\begin{document}
+\title{Gaussian Process Predictive Distributions}
+\author{Will Townes}
+\maketitle
+%\tableofcontents
+
+Most of the below follows the Rasmussen and Williams book chapter 2 (RW). Suppose we see a sequence of data points $(x_1,y_1),\ldots$ with $x_i\in\mathbb{R}^p$ and $y_i\in\mathbb{R}$. If we have observed $n$ such points so far, we want to choose the next value $x_*$ so as to maximize its corresponding $y_*$. This point will then be included in the next step as $x_{n+1},y_{n+1}$ and the process repeated until a stopping condition is satisfied.
+
+We assume that the $y_i$ are noisy observations from a Gaussian Process (GP) of the form $g(x)=f(x)+h(x)'\beta+\epsilon$ where $f(x)\sim\GP(0,k(x,x'))$ is a zero mean GP with kernel function $k$ and $\epsilon\sim\mathcal{N}(0,\sigma^2)$ is Gaussian noise. The functions $h(x)$ are fixed basis functions $h:\mathbb{R}^p\to\mathbb{R}^q$. This means $\beta\in\mathbb{R}^q$. Let $X$ be the $pxn$ matrix where data points are in the columns and $X_*$ be a $pxn^*$ matrix of new data points for which we want predictions. Let $H$ be a $qxn$ matrix formed by stacking $h(x_i)$ vectors in the columns and $H_*$ be a $qxn^*$ matrix with $h(x_j^*)$ in the columns. Let $y$ be the vector of $n$ observed $y_i$ values.
+
+Suppose we place the prior $\beta\sim\mathcal{N}(b,B)$. RW integrate out $\beta$ and then show that in the limit as $B$ approaches an uninformative prior, the predictive distribution becomes
+\begin{align*}
+\bar{g}(X_*) &= \bar{f}(X_*)+R'\bar{\beta}\\
+\cov(g_*) &= \cov(f_*) + R'(HK_y^{-1}H')^{-1}R
+\end{align*}
+with the following terms are defined
+\begin{align*}
+K_y &= K(X,X)+\sigma^2\mathbb{I}\\
+R &= H_* - HK_y^{-1} K_*\\
+\bar{\beta} &= \left(HK_y^{-1}H'\right)^{-1}HK_y^{-1}y\\
+\cov(f_*) &= K(X_*,X_*) - K_*K_y^{-1}K_*'\\
+\bar{f}(X_*) &= K_*'K_y^{-1}y
+\end{align*}
+where $K(X,X)$ is the $nxn$ kernel matrix comparing $X$ to itself, $K(X_*,X_*)$ is the $n^*xn^*$ kernel matrix comparing $X_*$ to itself, $K_*$ is the $n^*xn$ kernel matrix comparing $X_*$ to $X$.
+
+
+\end{document}
+%note - compiled with pdflatex

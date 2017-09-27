@@ -7,12 +7,16 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
 ```
 
 
 ```{r}
 N<-10
-f_true<-function(t){-.15*(t-5)^2+2}
+f_true<-function(x,a=1,b=100,c=3){drop((a-x[1])^2 + b*(x[2]-x[1]^2)^2)+c}
+pd<-expand.grid(x1=seq(from=-2,to=2,by=.1), x2=seq(from=-.5,to=3,by=.1))
+pd$y<-apply(pd,1,f_true)
+ggplot(pd,aes(x=x1,y=x2))+geom_contour(aes(z=log(y)))
 x<-c(runif(5,0,3),runif(5,7,10))
 y<- f_true(x) + rnorm(N,0,1) #maximum at x=5
 xgrid<-seq(from=min(x)-2,to=max(x)+2,length.out=100)
@@ -24,24 +28,32 @@ Gaussian Process
 
 ```{r}
 kern<-function(x,y,rho=1){
-  exp(-(x-y)^2/(2*rho))
+  exp(-sum((x-y)^2)/(2*rho))
 }
-K<-matrix(0,nrow=N,ncol=N)
-for(i in 1:N){
-  for(j in i:N){
-    K[j,i]<-K[i,j]<-kern(x[i],x[j])
+fit_GP<-function(X,y,kern,sigma=.1,K=NULL){
+  #X is a predictor matrix (rows=observations, cols=variables)
+  #y is outcome
+  #kern is a function that takes two vectors and returns the similarity
+  #sigma is the standard deviation of the noise
+  #returns a list of two functions: the mean and variance functions
+  #both take a single argument Xnew which is a matrix of new data points
+  #Xnew must have same number of columns as X
+  N<-length(y)
+  K<-matrix(0,nrow=N,ncol=N)
+  for(i in 1:N){
+    for(j in i:N){
+      K[j,i]<-K[i,j]<-kern(X[i,],X[j,])
+    }
   }
-}
-sigma<-.1 #assume known noise variance for now
-diag(K)<-diag(K)+sigma
-mu_func<-function(xnew,x,y,K){
-  k<-vapply(x,function(t){kern(t,xnew)},FUN.VALUE = 1.0)
-  k%*%solve(K,y)
-}
-sigma2_func<-function(xnew,x,K){
-  k<-vapply(x,function(t){kern(t,xnew)},FUN.VALUE = 1.0)
-  kern(xnew,xnew)+sigma^2 - k%*%solve(K,k)
-}
+  diag(K)<-diag(K)+sigma
+  mu_func<-function(xnew){
+    k<-apply(X,2,function(t){kern(t,xnew)})
+    k%*%solve(K,y)
+  }
+  sigma2_func<-function(xnew){
+    k<-apply(X,2,function(t){kern(t,xnew)})
+    kern(xnew,xnew)+sigma^2 - k%*%solve(K,k)
+  }
 mu_pts<-vapply(xgrid,function(t){mu_func(t,x,y,K)},FUN.VALUE=1.0)
 sigma_pts<-vapply(xgrid,function(t){sqrt(sigma2_func(t,x,K))},FUN.VALUE=1.0)
 lo<-mu_pts - 1.96*sigma_pts
