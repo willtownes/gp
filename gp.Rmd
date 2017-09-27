@@ -17,11 +17,11 @@ f_true<-function(x,a=1,b=100,c=3){drop((a-x[1])^2 + b*(x[2]-x[1]^2)^2)+c}
 pd<-expand.grid(x1=seq(from=-2,to=2,by=.1), x2=seq(from=-.5,to=3,by=.1))
 pd$y<-apply(pd,1,f_true)
 ggplot(pd,aes(x=x1,y=x2))+geom_contour(aes(z=log(y)))
-x<-c(runif(5,0,3),runif(5,7,10))
-y<- f_true(x) + rnorm(N,0,1) #maximum at x=5
-xgrid<-seq(from=min(x)-2,to=max(x)+2,length.out=100)
-plot(x,y,xlim=c(min(xgrid),max(xgrid)))
-lines(xgrid,f_true(xgrid),lty=2)
+#x<-c(runif(5,0,3),runif(5,7,10))
+#y<- f_true(x) + rnorm(N,0,1) #maximum at x=5
+#xgrid<-seq(from=min(x)-2,to=max(x)+2,length.out=100)
+#plot(x,y,xlim=c(min(xgrid),max(xgrid)))
+#lines(xgrid,f_true(xgrid),lty=2)
 ```
 
 Gaussian Process
